@@ -1,0 +1,42 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.coverprofile
+
+# Output of the go build tool
+_build/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Dependency directories (remove the comment below if you use Go modules)
+vendor/
+
+# Logs
+*.log
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# macOS system files
+.DS_Store
+
+# Kafka, Redis, Zookeeper specific files
+kafka-logs/
+redis-data/
+zookeeper-data/
+zookeeper-logs/
+
+# Environment variables
+.env
