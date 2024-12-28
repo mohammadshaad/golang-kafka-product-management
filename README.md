@@ -2,6 +2,10 @@
 
 Zocket is a product management application that allows users to manage products, including uploading and compressing product images, storing them in AWS S3, and caching product data in Redis. The application is built using Go, Gin, GORM, Kafka, and Redis.
 
+## Architecture
+
+![Project Architecture](architecture.png)
+
 ## Directory Structure
 
 ```
