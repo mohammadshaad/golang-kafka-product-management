@@ -4,7 +4,10 @@ import (
 	"bytes"
 	"context"
 	"image"
+	"image/color"
 	"image/jpeg"
+	"image/png"
+	"fmt"
 	"log"
 	"mime"
 	"net/http"
@@ -80,10 +83,25 @@ func DownloadImage(url string) (image.Image, error) {
 // CompressImage compresses an image and returns a byte array
 func CompressImage(img image.Image, quality int) ([]byte, error) {
 	var buf bytes.Buffer
-	err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: quality})
-	if err != nil {
-		log.Printf("Error compressing image: %v", err)
-		return nil, err
+	switch img.ColorModel() {
+	case color.YCbCrModel:
+		// Compress JPEG image
+		err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: quality})
+		if err != nil {
+			log.Printf("Error compressing JPEG image: %v", err)
+			return nil, err
+		}
+	case color.RGBAModel, color.NRGBAModel:
+		// PNG compression (no quality param needed for PNG)
+		err := png.Encode(&buf, img)
+		if err != nil {
+			log.Printf("Error compressing PNG image: %v", err)
+			return nil, err
+		}
+	default:
+		// If it's neither a JPEG nor PNG, return an error
+		log.Printf("Unsupported image format: %T", img)
+		return nil, fmt.Errorf("unsupported image format: %T", img)
 	}
 
 	return buf.Bytes(), nil
