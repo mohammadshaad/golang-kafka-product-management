@@ -3,12 +3,13 @@ package queue
 import (
 	"context"
 	"log"
-	"os"
+	"fmt"
 
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 var producer *kgo.Client
+var defaultTopic string
 
 func InitProducer(brokers []string) {
 	var err error
@@ -20,20 +21,28 @@ func InitProducer(brokers []string) {
 	}
 }
 
+func InitProducerWithTopic(brokers []string, topic string) {
+	InitProducer(brokers)
+	defaultTopic = topic
+}
+
 func PublishMessage(key, value []byte) error {
-	err := producer.ProduceSync(context.Background(), &kgo.Record{
-		Topic: os.Getenv("KAFKA_TOPIC"),
+	if producer == nil {
+		return fmt.Errorf("kafka producer is not initialized")
+	}
+	if defaultTopic == "" {
+		return fmt.Errorf("cannot produce record with no topic and no default topic")
+	}
+	record := &kgo.Record{
+		Topic: defaultTopic,
 		Key:   key,
 		Value: value,
-	}).FirstErr()
-	if err != nil {
-		log.Printf("Error publishing message to Kafka: %v", err)
-		return err
 	}
-	log.Println("Message successfully published to Kafka")
-	return nil
+	return producer.ProduceSync(context.Background(), record).FirstErr()
 }
 
 func CloseProducer() {
-	producer.Close()
+	if producer != nil {
+		producer.Close()
+	}
 }
