@@ -8,6 +8,7 @@ import (
     "image/jpeg"
     "image/png"
     "fmt"
+	"strconv"
     "log"
     "mime"
     "net/http"
@@ -19,6 +20,7 @@ import (
     "github.com/aws/aws-sdk-go-v2/service/s3"
 
     "github.com/mohammadshaad/zocket/internal/db"
+	"github.com/mohammadshaad/zocket/internal/cache"
 )
 
 // S3Client wraps the AWS S3 client
@@ -126,6 +128,10 @@ func SaveImageToFile(imgData []byte, filePath string) error {
 
 // UpdateProductImageURL updates the product record with the new compressed image URL
 func UpdateProductImageURL(productID int, originalURL, compressedURL string) error {
+    if db.DB == nil {
+        return fmt.Errorf("database connection not initialized")
+    }
+
     var product db.Product
     if err := db.DB.First(&product, productID).Error; err != nil {
         log.Printf("Error finding product %d: %v", productID, err)
@@ -157,6 +163,11 @@ func UpdateProductImageURL(productID int, originalURL, compressedURL string) err
     if err := db.DB.Save(&product).Error; err != nil {
         log.Printf("Error saving product with compressed image URL: %v", err)
         return err
+    }
+
+    // Invalidate the cache for this product
+    if err := cache.InvalidateProductCache(strconv.Itoa(productID)); err != nil {
+        log.Printf("Error invalidating cache for product %d: %v", productID, err)
     }
 
     log.Printf("Successfully updated product %d with compressed image URL", productID)

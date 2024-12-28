@@ -7,6 +7,7 @@ import (
 	"github.com/mohammadshaad/zocket/config"
 	"github.com/mohammadshaad/zocket/internal/queue"
     "github.com/mohammadshaad/zocket/internal/db"
+	"github.com/mohammadshaad/zocket/internal/cache"
 )
 
 func main() {
@@ -15,6 +16,12 @@ func main() {
 
 	// Initialize Database connection
     db.InitDatabase()
+
+	// Initialize Redis
+    REDIS_ADDR := os.Getenv("REDIS_ADDR")
+    REDIS_USERNAME := os.Getenv("REDIS_USERNAME")
+    REDIS_PASSWORD := os.Getenv("REDIS_PASSWORD")
+    cache.InitRedis(REDIS_ADDR, REDIS_USERNAME, REDIS_PASSWORD)
 
 	// Initialize Kafka Consumer
 	brokers := os.Getenv("KAFKA_BROKERS")

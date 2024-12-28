@@ -7,9 +7,40 @@ import (
     "strconv"
 
     "github.com/gin-gonic/gin"
+    "github.com/mohammadshaad/zocket/internal/cache"
     "github.com/mohammadshaad/zocket/internal/db"
     "github.com/mohammadshaad/zocket/internal/queue"
 )
+
+func GetProductByIDHandler(c *gin.Context) {
+    id := c.Param("id")
+
+    // Try to get from cache first
+    cachedProduct, err := cache.GetProductFromCache(id)
+    if err != nil {
+        log.Printf("Error accessing cache: %v", err)
+    }
+
+    if cachedProduct != nil {
+        log.Printf("Cache hit for product %s", id)
+        c.JSON(http.StatusOK, cachedProduct)
+        return
+    }
+
+    // If not in cache, get from database
+    var product db.Product
+    if err := db.DB.First(&product, id).Error; err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
+        return
+    }
+
+    // Store in cache for future requests
+    if err := cache.SetProductInCache(&product); err != nil {
+        log.Printf("Error setting cache: %v", err)
+    }
+
+    c.JSON(http.StatusOK, product)
+}
 
 func AddProductHandler(c *gin.Context) {
     var product db.Product
@@ -25,6 +56,11 @@ func AddProductHandler(c *gin.Context) {
     if err := db.DB.Create(&product).Error; err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save product"})
         return
+    }
+
+    // Cache the newly created product
+    if err := cache.SetProductInCache(&product); err != nil {
+        log.Printf("Error setting cache for new product: %v", err)
     }
 
     // Publish each image to Kafka for processing
@@ -50,18 +86,6 @@ func AddProductHandler(c *gin.Context) {
         "message": "Product added successfully",
         "product": product,
     })
-}
-
-func GetProductByIDHandler(c *gin.Context) {
-    id := c.Param("id")
-
-    var product db.Product
-    if err := db.DB.First(&product, id).Error; err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
-        return
-    }
-
-    c.JSON(http.StatusOK, product)
 }
 
 func GetAllProductsHandler(c *gin.Context) {
