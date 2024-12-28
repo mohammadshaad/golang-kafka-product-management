@@ -53,14 +53,10 @@ func AddProductHandler(c *gin.Context) {
     // Initialize CompressedProductImages array
     product.CompressedProductImages = make([]string, len(product.ProductImages))
 
-    // Add product to the database
     if err := db.DB.Create(&product).Error; err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save product"})
         return
     }
-
-    // Log the product details
-    log.Printf("Product added: %+v", product)
 
     // Cache the newly created product
     if err := cache.SetProductInCache(&product); err != nil {

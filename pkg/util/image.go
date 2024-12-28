@@ -4,23 +4,23 @@ import (
     "bytes"
     "context"
     "image"
-    "image/color"
     "image/jpeg"
     "image/png"
-    "fmt"
-	"strconv"
+    "image/color"
     "log"
     "mime"
     "net/http"
-    "os"
     "path/filepath"
+    "fmt"
+    "strconv"
+    "os"
 
     "github.com/aws/aws-sdk-go-v2/aws"
     "github.com/aws/aws-sdk-go-v2/config"
     "github.com/aws/aws-sdk-go-v2/service/s3"
 
     "github.com/mohammadshaad/zocket/internal/db"
-	"github.com/mohammadshaad/zocket/internal/cache"
+    "github.com/mohammadshaad/zocket/internal/cache"
 )
 
 // S3Client wraps the AWS S3 client
