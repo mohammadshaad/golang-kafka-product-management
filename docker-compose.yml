@@ -1,0 +1,55 @@
+# filepath: docker-compose.yml
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_DSN=${DATABASE_DSN}
+      - KAFKA_BROKERS=${KAFKA_BROKERS}
+      - KAFKA_TOPIC=${KAFKA_TOPIC}
+      - KAFKA_GROUP_ID=${KAFKA_GROUP_ID}
+      - AWS_REGION=${AWS_REGION}
+      - S3_BUCKET=${S3_BUCKET}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - REDIS_ADDR=${REDIS_ADDR}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_USERNAME=${REDIS_USERNAME}
+    depends_on:
+      - db
+      - kafka
+      - redis
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: product_management
+    ports:
+      - "5432:5432"
+
+  kafka:
+    image: wurstmeister/kafka:2.13-2.7.0
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    depends_on:
+      - zookeeper
+
+  zookeeper:
+    image: wurstmeister/zookeeper:3.4.6
+    ports:
+      - "2181:2181"
+
+  redis:
+    image: redis:6.2
+    ports:
+      - "6379:6379"
+    environment:
+      REDIS_PASSWORD: DvlBqLNf4B56tLfEbNfl0hHeu7p3xLlv
