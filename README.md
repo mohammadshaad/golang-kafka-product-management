@@ -4,7 +4,7 @@ This is a product management application that allows users to manage products, i
 
 ## Video Demo
 
-[![Watch the video]](https://share.vidyard.com/watch/6zbmzGzkTwnb6Zn3oMi2ML?)
+[Watch the video](https://share.vidyard.com/watch/6zbmzGzkTwnb6Zn3oMi2ML?)
 
 ## Architecture
 
