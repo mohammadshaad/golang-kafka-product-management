@@ -2,12 +2,62 @@ package util
 
 import (
 	"bytes"
+	"context"
 	"image"
 	"image/jpeg"
 	"log"
+	"mime"
 	"net/http"
 	"os"
+	"path/filepath"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
+
+// S3Client wraps the AWS S3 client
+type S3Client struct {
+	client     *s3.Client
+	bucketName string
+}
+
+// InitS3Client initializes the S3 client with the specified bucket name
+func InitS3Client(bucketName string) (*S3Client, error) {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		log.Printf("Error loading AWS configuration: %v", err)
+		return nil, err
+	}
+
+	client := s3.NewFromConfig(cfg)
+	return &S3Client{client: client, bucketName: bucketName}, nil
+}
+
+// UploadToS3 uploads a file to the S3 bucket
+func (s *S3Client) UploadToS3(fileName string, fileData []byte) (string, error) {
+	contentType := mime.TypeByExtension(filepath.Ext(fileName))
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+
+	input := &s3.PutObjectInput{
+		Bucket:      aws.String(s.bucketName),
+		Key:         aws.String(fileName),
+		Body:        bytes.NewReader(fileData),
+		ContentType: aws.String(contentType),
+	}
+
+	_, err := s.client.PutObject(context.TODO(), input)
+	if err != nil {
+		log.Printf("Error uploading to S3: %v", err)
+		return "", err
+	}
+
+	url := "https://" + s.bucketName + ".s3.amazonaws.com/" + fileName
+	log.Printf("File uploaded to S3: %s", url)
+	return url, nil
+}
 
 // DownloadImage downloads an image from a given URL
 func DownloadImage(url string) (image.Image, error) {
