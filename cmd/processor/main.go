@@ -6,11 +6,15 @@ import (
 
 	"github.com/mohammadshaad/zocket/config"
 	"github.com/mohammadshaad/zocket/internal/queue"
+    "github.com/mohammadshaad/zocket/internal/db"
 )
 
 func main() {
 	// Load configuration
 	config.LoadConfig()
+
+	// Initialize Database connection
+    db.InitDatabase()
 
 	// Initialize Kafka Consumer
 	brokers := os.Getenv("KAFKA_BROKERS")
