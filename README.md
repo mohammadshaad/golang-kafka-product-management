@@ -126,8 +126,8 @@ zocket/
 1. **Clone the repository:**
 
     ```sh
-    git clone https://github.com/mohammadshaad/zocket.git
-    cd zocket
+    git clone https://github.com/mohammadshaad/golang-kafka-product-management.git
+    cd golang-kafka-product-management
     ```
 
 2. **Build and run the Docker containers:**
