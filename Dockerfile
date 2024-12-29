@@ -1,5 +1,5 @@
-# Use the official Golang image as the base image
-FROM golang:1.21.0-alpine AS builder
+# Use a multi-stage build to build the Go applications
+FROM golang:1.21-alpine AS builder
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
@@ -22,6 +22,9 @@ RUN go build -o processor ./cmd/processor
 # Use a minimal base image to run the application
 FROM alpine:latest
 
+# Install necessary packages
+RUN apk add --no-cache bash curl
+
 # Set the Current Working Directory inside the container
 WORKDIR /root/
 
@@ -29,8 +32,11 @@ WORKDIR /root/
 COPY --from=builder /app/api .
 COPY --from=builder /app/processor .
 
-# Expose port 8080 for the API server
+# Expose port for API server
 EXPOSE 8080
 
-# Command to run both executables
-CMD ["sh", "-c", "./api & ./processor"]
+# Start the API server and Kafka processor
+CMD ["sh", "-c", "\
+    ./api & \
+    ./processor \
+"]
